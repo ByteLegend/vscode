@@ -688,7 +688,9 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		// Delay the creation of the bell listener to avoid showing the bell when the terminal
 		// starts up or reconnects
 		setTimeout(() => {
-			xterm.raw.onBell(() => {
+			// Below is changed by ByteLegend
+			xterm?.raw?.onBell?.call(this, () => {
+				// Above is changed by ByteLegend
 				if (this._configHelper.config.enableBell) {
 					this.statusList.add({
 						id: TerminalStatus.Bell,
