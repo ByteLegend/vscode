@@ -136,30 +136,34 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 		}
 
 		let message: string;
-		let detail = nls.localize('saveChangesDetail', "Your changes will be lost if you don't save them.");
+		// Below is changed by ByteLegend
+		let detail = nls.localize('saveChangesDetail', `Click "Discard Changes" to discard the changes you made; reopen the file you'll get the original version.
+
+Click "Cancel" to go back to the editor.`);
 		if (fileNamesOrResources.length === 1) {
-			message = nls.localize('saveChangesMessage', "Do you want to save the changes you made to {0}?", typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
+			message = nls.localize('saveChangesMessage', "What you want to do to {0}?", typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
 		} else {
-			message = nls.localize('saveChangesMessages', "Do you want to save the changes to the following {0} files?", fileNamesOrResources.length);
+			message = nls.localize('saveChangesMessages', "What you want to do to the following {0} files?", fileNamesOrResources.length);
 			detail = getFileNamesMessage(fileNamesOrResources) + '\n' + detail;
 		}
 
 		const buttons: string[] = [
-			fileNamesOrResources.length > 1 ? nls.localize({ key: 'saveAll', comment: ['&& denotes a mnemonic'] }, "&&Save All") : nls.localize({ key: 'save', comment: ['&& denotes a mnemonic'] }, "&&Save"),
-			nls.localize({ key: 'dontSave', comment: ['&& denotes a mnemonic'] }, "Do&&n't Save"),
+			// fileNamesOrResources.length > 1 ? nls.localize({ key: 'saveAll', comment: ['&& denotes a mnemonic'] }, "&&Save All") : nls.localize({ key: 'save', comment: ['&& denotes a mnemonic'] }, "&&Save"),
+			nls.localize({ key: 'dontSave', comment: ['&& denotes a mnemonic'] }, "Discard Changes"),
 			nls.localize('cancel', "Cancel")
 		];
 
 		const { choice } = await this.dialogService.show(Severity.Warning, message, buttons, {
-			cancelId: 2,
+			cancelId: 1,
 			detail
 		});
 
 		switch (choice) {
-			case 0: return ConfirmResult.SAVE;
-			case 1: return ConfirmResult.DONT_SAVE;
+			// case 0: return ConfirmResult.SAVE;
+			case 0: return ConfirmResult.DONT_SAVE;
 			default: return ConfirmResult.CANCEL;
 		}
+		// Above is changed by ByteLegend
 	}
 
 	protected addFileSchemaIfNeeded(schema: string, _isFolder?: boolean): string[] {
