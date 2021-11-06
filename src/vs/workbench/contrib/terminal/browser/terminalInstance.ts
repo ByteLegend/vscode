@@ -608,7 +608,9 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		// Delay the creation of the bell listener to avoid showing the bell when the terminal
 		// starts up or reconnects
 		setTimeout(() => {
-			this._xterm?.onBell(() => {
+			// Below is changed by ByteLegend
+			this._xterm?.onBell?.call(this, () => {
+			// Above is changed by ByteLegend
 				if (this._configHelper.config.enableBell) {
 					this.statusList.add({
 						id: TerminalStatus.Bell,
@@ -1625,6 +1627,23 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		if (!this._xterm) {
 			return;
 		}
+
+		// Below is changed by ByteLegend
+		if(key === 'altClickMovesCursor' || key === 'customGlyphs') {
+			// for some reason, the xterm has no this method:
+			// https://github.com/xtermjs/xterm.js/blob/cbe65f22caae20ace614a3a612d219b50146bfc6/src/headless/public/Terminal.ts#L133
+			// which results in:
+			// ERR No option with key "altClickMovesCursor": Error: No option with key "altClickMovesCursor"
+			//     at e.getOption (http://localhost:5000/static/node_modules/xterm/lib/xterm.js:1:282860)
+			//     at e.getOption (http://localhost:5000/static/node_modules/xterm/lib/xterm.js:1:100747)
+			//     at TerminalInstance._safeSetOption (http://localhost:5000/static/vscode/vs/workbench/contrib/terminal/browser/terminalInstance.js:1340:29)
+			//     at TerminalInstance.updateConfig (http://localhost:5000/static/vscode/vs/workbench/contrib/terminal/browser/terminalInstance.js:1228:18)
+			//     at TerminalInstance._attachToElement (http://localhost:5000/static/vscode/vs/workbench/contrib/terminal/browser/terminalInstance.js:648:18)
+			// same issue for customGlyphs
+			// let's just ignore them
+			return;
+		}
+		// Above is changed by ByteLegend
 
 		if (this._xterm.getOption(key) !== value) {
 			this._xterm.setOption(key, value);
