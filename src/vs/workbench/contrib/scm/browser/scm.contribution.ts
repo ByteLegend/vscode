@@ -45,7 +45,9 @@ const sourceControlViewIcon = registerIcon('source-control-view-icon', Codicon.s
 
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
 	id: VIEWLET_ID,
-	title: localize('source control', "Source Control"),
+	// Below is changed by ByteLegend
+	title: localize('my answers', "My Answers"),
+	// Above is changed by ByteLegend
 	ctorDescriptor: new SyncDescriptor(SCMViewPaneContainer),
 	storageId: 'workbench.scm.views.state',
 	icon: sourceControlViewIcon,
@@ -73,7 +75,9 @@ viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
 
 viewsRegistry.registerViews([{
 	id: VIEW_PANE_ID,
-	name: localize('source control', "Source Control"),
+	// Below is changed by ByteLegend
+	name: localize('my answers', "My Answers"),
+	// Above is changed by ByteLegend
 	ctorDescriptor: new SyncDescriptor(SCMViewPane),
 	canToggleVisibility: true,
 	workspace: true,
