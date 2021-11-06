@@ -1112,7 +1112,9 @@ export class DiffEditorWidget extends Disposable implements editorBrowser.IDiffE
 		if (options.originalAriaLabel) {
 			result.ariaLabel = options.originalAriaLabel;
 		}
-		result.readOnly = !this._options.originalEditable;
+		// Below is changed by ByteLegend
+		result.readOnly = true; // !this._originalIsEditable;
+		// Above is changed by ByteLegend
 		result.extraEditorClassName = 'original-in-monaco-diff-editor';
 		return {
 			...result,
@@ -1129,6 +1131,9 @@ export class DiffEditorWidget extends Disposable implements editorBrowser.IDiffE
 			result.ariaLabel = options.modifiedAriaLabel;
 		}
 
+		// Below is changed by ByteLegend
+		result.readOnly = true;
+		// Above is changed by ByteLegend
 		result.wordWrapOverride1 = this._options.diffWordWrap;
 		result.revealHorizontalRightPadding = EditorOptions.revealHorizontalRightPadding.defaultValue + DiffEditorWidget.ENTIRE_DIFF_OVERVIEW_WIDTH;
 		result.scrollbar!.verticalHasArrows = false;
