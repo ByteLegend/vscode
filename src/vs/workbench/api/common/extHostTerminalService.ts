@@ -898,8 +898,63 @@ export class WorkerExtHostTerminalService extends BaseExtHostTerminalService {
 		super(false, extHostRpc);
 	}
 
-	public createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
-		throw new NotSupportedError();
+	public createTerminal(name: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
+		// Below is changed by ByteLegend, we need to override the default unsupported error
+		const writeEmitter = new Emitter<string>();
+		const closedEmitter = new Emitter<string>();
+		const bufferBeforePtyOpen: string[] = [];
+		let ptyIsOpen = false;
+		const pty: vscode.Pseudoterminal = {
+			onDidWrite: writeEmitter.event,
+			open: () => {
+				ptyIsOpen = true;
+				bufferBeforePtyOpen.forEach((text) => {
+					writeEmitter.fire(text);
+					writeEmitter.fire('\r\n');
+				});
+			},
+			close: () => {
+				closedEmitter.fire(name);
+			}
+		};
+		const delegate: vscode.Terminal = super.createExtensionTerminal({
+			name,
+			pty,
+		}, {});
+		const ret = {
+			name,
+			creationOptions: delegate.creationOptions,
+			dimensions: delegate.dimensions,
+			exitStatus: delegate.exitStatus,
+			state: delegate.state,
+			dispose(): void {
+				delegate.dispose();
+			},
+			hide(): void {
+				delegate.hide();
+			},
+			sendText(text: string, addNewLine?: boolean): void {
+				if (!ptyIsOpen) {
+					bufferBeforePtyOpen.push(text);
+				} else {
+					writeEmitter.fire(text);
+					if (addNewLine) {
+						writeEmitter.fire('\r\n');
+					}
+				}
+			},
+			show(preserveFocus?: boolean): void {
+				delegate.show(preserveFocus);
+			},
+			processId: delegate.processId
+		};
+		closedEmitter.event((name) => {
+			if (ret.name === name) {
+				ret.dispose();
+			}
+		});
+		return ret;
+		// Above is changed by ByteLegend
 	}
 
 	public createTerminalFromOptions(options: vscode.TerminalOptions, internalOptions?: ITerminalInternalOptions): vscode.Terminal {
