@@ -27,6 +27,11 @@ import { mixin } from 'vs/base/common/objects';
 import { Codicon } from 'vs/base/common/codicons';
 import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
 import { CancellationToken } from 'vs/base/common/cancellation';
+import {VIEWLET_ID as SEARCH_VIEW_ID} from "vs/workbench/services/search/common/search";
+import {VIEWLET_ID as DEBUG_VIEW_ID} from "vs/workbench/contrib/debug/common/debug";
+import {VIEWLET_ID as EXTENSIONS_VIEW_ID} from "vs/workbench/contrib/extensions/common/extensions";
+import {REPOSITORIES_VIEW_PANE_ID, VIEW_PANE_ID} from "vs/workbench/contrib/scm/common/scm";
+import {OUTPUT_VIEW_ID} from "vs/workbench/contrib/output/common/output";
 
 export const defaultViewIcon = registerIcon('default-view-icon', Codicon.window, localize('defaultViewIcon', 'Default view icon.'));
 
@@ -187,6 +192,17 @@ interface RelaxedViewContainer extends ViewContainer {
 	openCommandActionDescriptor?: OpenCommandActionDescriptor;
 }
 
+class DummyViewContainer implements ViewContainer {
+	readonly ctorDescriptor: SyncDescriptor<IViewPaneContainer> = <SyncDescriptor<IViewPaneContainer>>{};
+	readonly id: string;
+	readonly title: string;
+
+	constructor(id: string, title: string) {
+		this.id = id;
+		this.title = title;
+	}
+}
+
 class ViewContainersRegistryImpl extends Disposable implements IViewContainersRegistry {
 
 	private readonly _onDidRegister = this._register(new Emitter<{ viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation }>());
@@ -206,6 +222,14 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 		const existing = this.get(viewContainerDescriptor.id);
 		if (existing) {
 			return existing;
+		}
+
+		if (viewContainerDescriptor.id === SEARCH_VIEW_ID
+			|| viewContainerDescriptor.id === EXTENSIONS_VIEW_ID
+			|| viewContainerDescriptor.id === DEBUG_VIEW_ID
+		    || viewContainerDescriptor.id === "workbench.view.extension.github1s") {
+			console.log(`Create dummy view container: ${viewContainerDescriptor.id}`);
+			return new DummyViewContainer(viewContainerDescriptor.id, viewContainerDescriptor.title);
 		}
 
 		const viewContainer: RelaxedViewContainer = viewContainerDescriptor;
@@ -413,7 +437,20 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	private _viewWelcomeContents = new SetMap<string, IViewContentDescriptor>();
 
 	registerViews(views: IViewDescriptor[], viewContainer: ViewContainer): void {
-		this.registerViews2([{ views, viewContainer }]);
+		// Below is changed by ByteLegend
+		if(viewContainer === null /* dummy view container is not put into cache */ || viewContainer instanceof DummyViewContainer) {
+			return;
+		}
+		const filteredViews = views.filter((view) => {
+			return view.id !== VIEW_PANE_ID &&
+				view.id !== REPOSITORIES_VIEW_PANE_ID &&
+				view.id !== 'outline' &&
+				view.id !== OUTPUT_VIEW_ID &&
+				// Problems on panel
+				view.id !== 'workbench.panel.markers.view';
+		});
+		// Above is changed by ByteLegend
+		this.registerViews2([{views: filteredViews, viewContainer}]);
 	}
 
 	registerViews2(views: { views: IViewDescriptor[], viewContainer: ViewContainer }[]): void {
