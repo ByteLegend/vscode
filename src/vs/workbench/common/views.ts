@@ -462,7 +462,6 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 		const filteredViews = views.filter((view) => {
 			return view.id !== VIEW_PANE_ID &&
 				view.id !== REPOSITORIES_VIEW_PANE_ID &&
-				view.id !== 'outline' &&
 				view.id !== OUTPUT_VIEW_ID &&
 				// Problems on panel
 				view.id !== 'workbench.panel.markers.view';
