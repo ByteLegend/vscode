@@ -231,7 +231,6 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 			|| viewContainerDescriptor.id === EXTENSIONS_VIEW_ID
 			|| viewContainerDescriptor.id === DEBUG_VIEW_ID
 			|| viewContainerDescriptor.id === 'workbench.view.extension.github1s') {
-			console.log(`Create dummy view container: ${viewContainerDescriptor.id}`);
 			return new DummyViewContainer(viewContainerDescriptor.id, viewContainerDescriptor.title);
 		}
 
