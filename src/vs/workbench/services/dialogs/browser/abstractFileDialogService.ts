@@ -4,29 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from 'vs/nls';
-import { IWindowOpenable, isWorkspaceToOpen, isFileToOpen } from 'vs/platform/windows/common/windows';
-import { IPickAndOpenOptions, ISaveDialogOptions, IOpenDialogOptions, FileFilter, IFileDialogService, IDialogService, ConfirmResult, getFileNamesMessage } from 'vs/platform/dialogs/common/dialogs';
-import { IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace';
-import { IHistoryService } from 'vs/workbench/services/history/common/history';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { URI } from 'vs/base/common/uri';
+import {isFileToOpen, isWorkspaceToOpen, IWindowOpenable} from 'vs/platform/windows/common/windows';
+import {
+	ConfirmResult,
+	FileFilter,
+	getFileNamesMessage,
+	IDialogService,
+	IFileDialogService,
+	IOpenDialogOptions,
+	IPickAndOpenOptions,
+	ISaveDialogOptions
+} from 'vs/platform/dialogs/common/dialogs';
+import {IWorkspaceContextService, WorkbenchState} from 'vs/platform/workspace/common/workspace';
+import {IHistoryService} from 'vs/workbench/services/history/common/history';
+import {IWorkbenchEnvironmentService} from 'vs/workbench/services/environment/common/environmentService';
+import {URI} from 'vs/base/common/uri';
 import * as resources from 'vs/base/common/resources';
-import { IInstantiationService, } from 'vs/platform/instantiation/common/instantiation';
-import { SimpleFileDialog } from 'vs/workbench/services/dialogs/browser/simpleFileDialog';
-import { WORKSPACE_EXTENSION, isUntitledWorkspace, IWorkspacesService } from 'vs/platform/workspaces/common/workspaces';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IFileService } from 'vs/platform/files/common/files';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
-import { IHostService } from 'vs/workbench/services/host/browser/host';
+import {IInstantiationService,} from 'vs/platform/instantiation/common/instantiation';
+import {SimpleFileDialog} from 'vs/workbench/services/dialogs/browser/simpleFileDialog';
+import {isUntitledWorkspace, IWorkspacesService, WORKSPACE_EXTENSION} from 'vs/platform/workspaces/common/workspaces';
+import {IConfigurationService} from 'vs/platform/configuration/common/configuration';
+import {IFileService} from 'vs/platform/files/common/files';
+import {IOpenerService} from 'vs/platform/opener/common/opener';
+import {IHostService} from 'vs/workbench/services/host/browser/host';
 import Severity from 'vs/base/common/severity';
-import { coalesce, distinct } from 'vs/base/common/arrays';
-import { compareIgnoreCase, trim } from 'vs/base/common/strings';
-import { IModeService } from 'vs/editor/common/services/modeService';
-import { ILabelService } from 'vs/platform/label/common/label';
-import { IPathService } from 'vs/workbench/services/path/common/pathService';
-import { Schemas } from 'vs/base/common/network';
-import { PLAINTEXT_EXTENSION } from 'vs/editor/common/modes/modesRegistry';
-import { ICommandService } from 'vs/platform/commands/common/commands';
+import {coalesce, distinct} from 'vs/base/common/arrays';
+import {compareIgnoreCase, trim} from 'vs/base/common/strings';
+import {IModeService} from 'vs/editor/common/services/modeService';
+import {ILabelService} from 'vs/platform/label/common/label';
+import {IPathService} from 'vs/workbench/services/path/common/pathService';
+import {Schemas} from 'vs/base/common/network';
+import {PLAINTEXT_EXTENSION} from 'vs/editor/common/modes/modesRegistry';
+import {ICommandService} from 'vs/platform/commands/common/commands';
 
 export abstract class AbstractFileDialogService implements IFileDialogService {
 
@@ -122,20 +131,26 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 		let message: string;
 		// Below is changed by ByteLegend
-		let detail = nls.localize('saveChangesDetail', `Click "Discard Changes" to discard the changes you made; reopen the file you'll get the original version.
+		const initData = await this.commandService.executeCommand('bytelegend.getInitData')
+		const saveChangesDetail = initData?.i18nTexts?.SaveChangesDetail || `Click "Discard Changes" to discard the changes you made; reopen the file you'll get the original version.
+Click "Cancel" to go back to the editor.`
+		const whatDoYouWantToDoSingleFile = initData?.i18nTexts?.WhatDoYouWantToDoSingleFile || 'What do you want to do to {0}?'
+		const whatDoYouWantToDoMultipleFile = initData?.i18nTexts?.WhatDoYouWantToDoMultipleFile || 'What do you want to do to the following {0} files?'
+		const discardChanges = initData?.i18nTexts?.DiscardChanges || 'Discard Changes'
+		const cancel = initData?.i18nTexts?.Cancel || 'Cancel'
 
-Click "Cancel" to go back to the editor.`);
+		let detail = nls.localize('saveChangesDetail', saveChangesDetail);
 		if (fileNamesOrResources.length === 1) {
-			message = nls.localize('saveChangesMessage', "What you want to do to {0}?", typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
+			message = nls.localize('saveChangesMessage', whatDoYouWantToDoSingleFile, typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
 		} else {
-			message = nls.localize('saveChangesMessages', "What you want to do to the following {0} files?", fileNamesOrResources.length);
+			message = nls.localize('saveChangesMessages', whatDoYouWantToDoMultipleFile, fileNamesOrResources.length);
 			detail = getFileNamesMessage(fileNamesOrResources) + '\n' + detail;
 		}
 
 		const buttons: string[] = [
 			// fileNamesOrResources.length > 1 ? nls.localize({ key: 'saveAll', comment: ['&& denotes a mnemonic'] }, "&&Save All") : nls.localize({ key: 'save', comment: ['&& denotes a mnemonic'] }, "&&Save"),
-			nls.localize({ key: 'dontSave', comment: ['&& denotes a mnemonic'] }, "Discard Changes"),
-			nls.localize('cancel', "Cancel")
+			nls.localize({key: 'dontSave', comment: ['&& denotes a mnemonic']}, discardChanges),
+			nls.localize('cancel', cancel)
 		];
 
 		const { choice } = await this.dialogService.show(Severity.Warning, message, buttons, {
