@@ -577,7 +577,9 @@ export class CustomMenubarControl extends MenubarControl {
 	}
 
 	private get currentMenubarVisibility(): MenuBarVisibility {
-		return getMenuBarVisibility(this.configurationService);
+		// Below is changed by ByteLegend: hide menu bar
+		return 'hidden';
+		// Above is changed by ByteLegend
 	}
 
 	private get currentDisableMenuBarAltFocus(): boolean {
