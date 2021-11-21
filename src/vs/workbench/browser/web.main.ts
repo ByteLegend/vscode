@@ -74,12 +74,13 @@ import { IProgressService } from 'vs/platform/progress/common/progress';
 import { DelayedLogChannel } from 'vs/workbench/services/output/common/delayedLogChannel';
 import { dirname, joinPath } from 'vs/base/common/resources';
 import { NullPolicyService } from 'vs/platform/policy/common/policy';
+import { globals } from 'vs/base/common/platform';
+import { AutoSaveMode, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
 
 export class BrowserMain extends Disposable {
 
 	private readonly onWillShutdownDisposables = this._register(new DisposableStore());
 	private readonly indexedDBFileSystemProviders: IndexedDBFileSystemProvider[] = [];
-
 	constructor(
 		private readonly domElement: HTMLElement,
 		private readonly configuration: IWorkbenchConstructionOptions
@@ -135,6 +136,13 @@ export class BrowserMain extends Disposable {
 			const instantiationService = accessor.get(IInstantiationService);
 
 			const embedderLogger = instantiationService.createInstance(DelayedLogChannel, 'webEmbedder', productService.embedderIdentifier || localize('vscode.dev', "vscode.dev"), joinPath(dirname(environmentService.logFile), `webEmbedder.log`));
+			// below codes are changed by ByteLegend
+			// we need to disable autosave, otherwise the editor will immediately become undirty after change
+			const filesConfigurationService = accessor.get(IFilesConfigurationService);
+			if (filesConfigurationService.getAutoSaveMode() !== AutoSaveMode.OFF) {
+				filesConfigurationService.toggleAutoSave();
+			}
+			// above codes are changed by ByteLegend
 
 			return {
 				commands: {
@@ -474,3 +482,27 @@ export class BrowserMain extends Disposable {
 		return { id: 'empty-window' };
 	}
 }
+
+export function main(domElement: HTMLElement, options: IWorkbenchConstructionOptions): Promise<IWorkbench> {
+	const workbench = new BrowserMain(domElement, options);
+
+	// below codes are changed by github1s and ByteLegend
+	return workbench.open().then(workbench => {
+		registerCommandForwarder(workbench);
+		// Remove the html load spinner
+		document.querySelector('#load-spinner')?.remove();
+		return workbench;
+	});
+	// above codes are changed by github1s and ByteLegend
+}
+
+// Below is changed by ByteLegend
+// This event listener listens to window.postMessage and forwards it to vscode command system
+function registerCommandForwarder(workbench: IWorkbench) {
+	globals.addEventListener('message', (message: MessageEvent) => {
+		if (message.data && message.data.forwardCommand) {
+			workbench.commands.executeCommand(message.data.forwardCommand, ...message.data.forwardCommandArgs);
+		}
+	});
+}
+// Above is changed by ByteLegend
