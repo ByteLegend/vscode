@@ -473,6 +473,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	primary: KeyMod.CtrlCmd | KeyCode.KEY_S,
 	id: SAVE_FILE_COMMAND_ID,
 	handler: accessor => {
+		// Below is changed by ByteLegend
+		if (1 + 1 == 2) {
+			return true
+		}
+        // Above is changed by ByteLegend
 		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, force: true /* force save even when non-dirty */ });
 	}
 });
@@ -494,6 +499,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: undefined,
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KEY_S,
 	handler: accessor => {
+		// Below is changed by ByteLegend
+		if (1 + 1 == 2) {
+			return true
+		}
+        // Above is changed by ByteLegend
 		return saveSelectedEditors(accessor, { reason: SaveReason.EXPLICIT, saveAs: true });
 	}
 });
@@ -513,6 +523,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 CommandsRegistry.registerCommand({
 	id: SAVE_ALL_IN_GROUP_COMMAND_ID,
 	handler: (accessor, _: URI | object, editorContext: IEditorCommandsContext) => {
+		// Below is changed by ByteLegend
+		if (1 + 1 == 2) {
+			return true
+		}
+        // Above is changed by ByteLegend
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const contexts = getMultiSelectedEditorContexts(editorContext, accessor.get(IListService), accessor.get(IEditorGroupsService));
@@ -531,6 +546,11 @@ CommandsRegistry.registerCommand({
 CommandsRegistry.registerCommand({
 	id: SAVE_FILES_COMMAND_ID,
 	handler: accessor => {
+		// Below is changed by ByteLegend
+		if (1 + 1 == 2) {
+			return true
+		}
+        // Above is changed by ByteLegend
 		const editorService = accessor.get(IEditorService);
 
 		return editorService.saveAll({ includeUntitled: false, reason: SaveReason.EXPLICIT });
