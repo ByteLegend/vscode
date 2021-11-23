@@ -274,7 +274,7 @@ configurationRegistry.registerConfiguration({
 				nls.localize('overwriteFileOnDisk', "Will resolve the save conflict by overwriting the file on disk with the changes in the editor.")
 			],
 			'description': nls.localize('files.saveConflictResolution', "A save conflict can occur when a file is saved to disk that was changed by another program in the meantime. To prevent data loss, the user is asked to compare the changes in the editor with the version on disk. This setting should only be changed if you frequently encounter save conflict errors and may result in data loss if used without caution."),
-			'default': 'askUser',
+			'default': 'overwriteFileOnDisk',
 			'scope': ConfigurationScope.LANGUAGE_OVERRIDABLE
 		},
 		'files.simpleDialog.enable': {
