@@ -139,18 +139,21 @@ Click "Cancel" to go back to the editor.`
 		const discardChanges = initData?.i18nTexts?.DiscardChanges || 'Discard Changes'
 		const cancel = initData?.i18nTexts?.Cancel || 'Cancel'
 
-		let detail = nls.localize('saveChangesDetail', saveChangesDetail);
+		let detail = saveChangesDetail;
 		if (fileNamesOrResources.length === 1) {
-			message = nls.localize('saveChangesMessage', whatDoYouWantToDoSingleFile, typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
+			const fileName = typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]);
+			message = whatDoYouWantToDoSingleFile.replace('{0}', fileName)
 		} else {
-			message = nls.localize('saveChangesMessages', whatDoYouWantToDoMultipleFile, fileNamesOrResources.length);
+			message = whatDoYouWantToDoMultipleFile.replace('{0}', fileNamesOrResources.length);
 			detail = getFileNamesMessage(fileNamesOrResources) + '\n' + detail;
 		}
 
 		const buttons: string[] = [
 			// fileNamesOrResources.length > 1 ? nls.localize({ key: 'saveAll', comment: ['&& denotes a mnemonic'] }, "&&Save All") : nls.localize({ key: 'save', comment: ['&& denotes a mnemonic'] }, "&&Save"),
-			nls.localize({key: 'dontSave', comment: ['&& denotes a mnemonic']}, discardChanges),
-			nls.localize('cancel', cancel)
+			// nls.localize({key: 'dontSave', comment: ['&& denotes a mnemonic']}, discardChanges),
+			// nls.localize('cancel', cancel)
+			discardChanges,
+			cancel
 		];
 
 		const { choice } = await this.dialogService.show(Severity.Warning, message, buttons, {
