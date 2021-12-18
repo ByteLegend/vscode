@@ -30,7 +30,7 @@ import { CancellationToken } from 'vs/base/common/cancellation';
 import {VIEWLET_ID as SEARCH_VIEW_ID} from "vs/workbench/services/search/common/search";
 import {VIEWLET_ID as DEBUG_VIEW_ID} from "vs/workbench/contrib/debug/common/debug";
 import {VIEWLET_ID as EXTENSIONS_VIEW_ID} from "vs/workbench/contrib/extensions/common/extensions";
-import {REPOSITORIES_VIEW_PANE_ID, VIEW_PANE_ID} from "vs/workbench/contrib/scm/common/scm";
+import {VIEWLET_ID} from "vs/workbench/contrib/scm/common/scm";
 import {OUTPUT_VIEW_ID} from "vs/workbench/contrib/output/common/output";
 
 export const defaultViewIcon = registerIcon('default-view-icon', Codicon.window, localize('defaultViewIcon', 'Default view icon.'));
@@ -224,12 +224,15 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 			return existing;
 		}
 
+		// Below is changed by ByteLegend
 		if (viewContainerDescriptor.id === SEARCH_VIEW_ID
 			|| viewContainerDescriptor.id === EXTENSIONS_VIEW_ID
 			|| viewContainerDescriptor.id === DEBUG_VIEW_ID
+			|| viewContainerDescriptor.id === VIEWLET_ID
 		    || viewContainerDescriptor.id === "workbench.view.extension.github1s") {
 			return new DummyViewContainer(viewContainerDescriptor.id, viewContainerDescriptor.title);
 		}
+		// Above is changed by ByteLegend
 
 		const viewContainer: RelaxedViewContainer = viewContainerDescriptor;
 		viewContainer.openCommandActionDescriptor = options?.donotRegisterOpenCommand ? undefined : (viewContainer.openCommandActionDescriptor ?? { id: viewContainer.id });
@@ -441,9 +444,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 			return;
 		}
 		const filteredViews = views.filter((view) => {
-			return view.id !== VIEW_PANE_ID &&
-				view.id !== REPOSITORIES_VIEW_PANE_ID &&
-				view.id !== OUTPUT_VIEW_ID &&
+			return view.id !== OUTPUT_VIEW_ID &&
 				// Problems on panel
 				view.id !== 'workbench.panel.markers.view';
 		});
