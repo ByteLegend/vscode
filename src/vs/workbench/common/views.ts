@@ -224,15 +224,19 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 			return existing;
 		}
 
+		// Below is changed by ByteLegend
 		const DEBUG_VIEW_ID = 'workbench.view.debug';
 		const EXTENSIONS_VIEW_ID = 'workbench.view.extensions';
+		const SCM_VIEW_ID = 'workbench.view.scm';
 
 		if (viewContainerDescriptor.id === SEARCH_VIEW_ID
 			|| viewContainerDescriptor.id === EXTENSIONS_VIEW_ID
 			|| viewContainerDescriptor.id === DEBUG_VIEW_ID
+			|| viewContainerDescriptor.id === SCM_VIEW_ID
 			|| viewContainerDescriptor.id === 'workbench.view.extension.github1s') {
 			return new DummyViewContainer(viewContainerDescriptor.id, viewContainerDescriptor.title);
 		}
+		// Above is changed by ByteLegend
 
 		const viewContainer: RelaxedViewContainer = viewContainerDescriptor;
 		viewContainer.openCommandActionDescriptor = options?.donotRegisterOpenCommand ? undefined : (viewContainer.openCommandActionDescriptor ?? { id: viewContainer.id });
@@ -459,9 +463,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 		const REPOSITORIES_VIEW_PANE_ID = 'workbench.scm.repositories';
 		const OUTPUT_VIEW_ID = 'workbench.panel.output';
 		const filteredViews = views.filter((view) => {
-			return view.id !== VIEW_PANE_ID &&
-				view.id !== REPOSITORIES_VIEW_PANE_ID &&
-				view.id !== OUTPUT_VIEW_ID &&
+			return view.id !== OUTPUT_VIEW_ID &&
 				// Problems on panel
 				view.id !== 'workbench.panel.markers.view';
 		});
