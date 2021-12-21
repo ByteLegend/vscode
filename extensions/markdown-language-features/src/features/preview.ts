@@ -428,7 +428,6 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 
 
 	private async onDidClickPreviewLink(href: string) {
-		console.log(`Click ${href}`);
 		let [hrefPath, fragment] = href.split('#').map(c => decodeURIComponent(c));
 
 		if (hrefPath[0] !== '/') {
