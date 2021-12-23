@@ -428,6 +428,12 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 
 
 	private async onDidClickPreviewLink(href: string) {
+		// Below is changed by ByteLegend
+		if (href.startsWith('github1s:')) {
+			await vscode.commands.executeCommand('bytelegend.open', href);
+			return;
+		}
+		// Above is changed by ByteLegend
 		let [hrefPath, fragment] = href.split('#').map(c => decodeURIComponent(c));
 
 		if (hrefPath[0] !== '/') {
