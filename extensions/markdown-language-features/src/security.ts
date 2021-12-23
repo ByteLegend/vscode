@@ -42,7 +42,9 @@ export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPol
 
 	public getSecurityLevelForResource(resource: vscode.Uri): MarkdownPreviewSecurityLevel {
 		// Use new security level setting first
-		const level = this.globalState.get<MarkdownPreviewSecurityLevel | undefined>(this.security_level_key + this.getRoot(resource), undefined);
+		// Below is changed by ByteLegend, for localhost and test we need to allow http
+		const level = this.globalState.get<MarkdownPreviewSecurityLevel | undefined>(this.security_level_key + this.getRoot(resource), MarkdownPreviewSecurityLevel.AllowInsecureContent);
+		// Above is changed by ByteLegend
 		if (typeof level !== 'undefined') {
 			return level;
 		}
