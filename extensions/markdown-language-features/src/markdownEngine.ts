@@ -160,7 +160,7 @@ export class MarkdownEngine {
 
 		md.renderer.rules.link_open = (tokens: Token[], idx: number, options: any, env: any, self: any) => {
 			const token = tokens[idx];
-			const hrefIndex = token.attrIndex('data-href');
+			const hrefIndex = token.attrIndex('href');
 			if (hrefIndex >= 0) {
 				const href = token.attrs[hrefIndex][1];
 				if (/https:\/\/github.com\/([\w_-]+)\/([\w_-]+)\/blob\/([\w_.-]+)\/(.*)/.test(href) || /https:\/\/raw.githubusercontent.com\/([\w_-]+)\/([\w_-]+)\/([\w_.-]+)\/(.*)/.test(href)) {
