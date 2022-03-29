@@ -123,9 +123,13 @@ export class MarkdownEngine {
 				this.addLinkRenderer(md);
 
 				const initData: any = await vscode.commands.executeCommand('bytelegend.getInitData');
+				let gfw = true;
+				if (initData) {
+					gfw = initData.gfw;
+				}
 				this.addByteLegendDetailsRenderer(md, initData?.['localeName'] || '简体中文');
 				this.addByteLegendLinkRenderer(md);
-				this.addByteLegendImageRenderer(md, initData?.gfw || true, initData?.apiServer || 'https://bytelegend.com');
+				this.addByteLegendImageRenderer(md, gfw, initData?.apiServer || 'https://bytelegend.com');
 
 				return md;
 			});
@@ -150,7 +154,7 @@ export class MarkdownEngine {
 					new RegExp(`<details>\\s*<summary>${localeName}`),
 					`<details open='true'><summary>${localeName}`
 				);
-		}
+		};
 	}
 
 	private addByteLegendLinkRenderer(md: MarkdownIt): void {
