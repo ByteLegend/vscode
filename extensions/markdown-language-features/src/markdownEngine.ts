@@ -144,7 +144,19 @@ export class MarkdownEngine {
 				this.addLinkValidator(md);
 				this.addNamedHeaders(md);
 				this.addLinkRenderer(md);
+
+				const initData: any = await vscode.commands.executeCommand('bytelegend.getInitData');
+				let gfw = true;
+				if (initData) {
+					gfw = initData.gfw;
+				}
+				// allow-any-unicode-next-line
+				this.addByteLegendDetailsRenderer(md, initData?.['localeName'] || '简体中文');
+				this.addByteLegendLinkRenderer(md);
+				this.addByteLegendImageRenderer(md, gfw, initData?.apiServer || 'https://bytelegend.com');
+
 				md.use(pluginSourceMap);
+
 				return md;
 			})();
 		}
@@ -152,6 +164,59 @@ export class MarkdownEngine {
 		const md = await this.md!;
 		md.set(config);
 		return md;
+	}
+
+	/*
+	Open <details> tag of corresponding locale, <details> -> <details open='true'>
+ */
+	private addByteLegendDetailsRenderer(md: MarkdownIt, localeName: string): void {
+		const render = md.renderer.render;
+		md.renderer.render = function (tokens: Token[], options: any, env: any) {
+			return render.call(md.renderer, tokens, options, env)
+				.replace(
+					/<details open='true'>\s*<summary>English/,
+					'<details><summary>English'
+				).replace(
+					new RegExp(`<details>\\s*<summary>${localeName}`),
+					`<details open='true'><summary>${localeName}`
+				);
+		};
+	}
+
+	private addByteLegendLinkRenderer(md: MarkdownIt): void {
+		const old_render = md.renderer.rules.link_open || ((tokens: Token[], idx: number, options: any, _env: any, self: any) => {
+			return self.renderToken(tokens, idx, options);
+		});
+
+		md.renderer.rules.link_open = (tokens: Token[], idx: number, options: any, env: any, self: any) => {
+			const token = tokens[idx];
+			const hrefIndex = token.attrIndex('href');
+			if (hrefIndex >= 0) {
+				const href = token.attrs[hrefIndex][1];
+				if (/https:\/\/github.com\/([\w_-]+)\/([\w_-]+)\/blob\/([\w_.-]+)\/(.*)/.test(href) || /https:\/\/raw.githubusercontent.com\/([\w_-]+)\/([\w_-]+)\/([\w_.-]+)\/(.*)/.test(href)) {
+					token.attrSet('data-href', href.replace('https://', 'github1s://'));
+				}
+			}
+			return old_render(tokens, idx, options, env, self);
+		};
+	}
+
+	private addByteLegendImageRenderer(md: MarkdownIt, gfw: boolean, apiServer: string): void {
+		const original = md.renderer.rules.image;
+		md.renderer.rules.image = (tokens: Token[], idx: number, options: any, env: RenderEnv, self: any) => {
+			const token = tokens[idx];
+
+			const src = token.attrGet('src');
+			if (src && gfw) {
+				token.attrSet('src', src.replace('https://raw.githubusercontent.com/', `${apiServer}/ghraw/`));
+			}
+
+			if (original) {
+				return original(tokens, idx, options, env, self);
+			} else {
+				return self.renderToken(tokens, idx, options, env, self);
+			}
+		};
 	}
 
 	public reloadPlugins() {

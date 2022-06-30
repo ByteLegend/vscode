@@ -444,6 +444,12 @@ class MarkdownPreview extends Disposable implements WebviewResourceProvider {
 	}
 
 	private async onDidClickPreviewLink(href: string) {
+		// Below is changed by ByteLegend
+		if (href.startsWith('github1s:')) {
+			await vscode.commands.executeCommand('bytelegend.open', href);
+			return;
+		}
+		// Above is changed by ByteLegend
 		const targetResource = resolveDocumentLink(href, this.resource);
 
 		const config = vscode.workspace.getConfiguration('markdown', this.resource);
